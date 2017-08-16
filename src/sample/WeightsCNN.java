@@ -27,8 +27,7 @@ public class WeightsCNN {
         //реалізувати пізніше
     }
 
-    public void save() throws IOException
-    {
+    public void save() throws IOException {
         //реалізувати пізніше
     }
 
