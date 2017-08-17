@@ -1,14 +1,12 @@
 package sample;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class WeightsCNN {
 
-    private ArrayList<int[][]> weights = new ArrayList<>();
+    private ArrayList<int[][]> weights = new ArrayList<int[][]>();
     private String path = "";
 
     public WeightsCNN(int numb_of_weights, int size_of_weight, int rand){

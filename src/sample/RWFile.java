@@ -43,11 +43,7 @@ public class RWFile {
             image = new int[bImage.getHeight()][bImage.getWidth()];
             for (int i = 0; i < image.length ; i++) {
                 for (int j = 0; j < image[0].length; j++) {
-                    Color c = new Color(bImage.getRGB(j,i));
-                    if(c.getRed()>125)
-                        image[i][j]=1;
-                    else
-                        image[i][j]=0;
+                    image[i][j] = bImage.getRGB(j,i);
                 }
             }
             return image;
