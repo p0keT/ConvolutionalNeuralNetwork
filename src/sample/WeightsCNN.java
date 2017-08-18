@@ -6,19 +6,27 @@ import java.util.Random;
 
 public class WeightsCNN {
 
-    private ArrayList<int[][]> weights = new ArrayList<int[][]>();
+    private ArrayList<double[][]> weights = new ArrayList<double[][]>();
     private String path = "";
 
     public WeightsCNN(int numb_of_weights, int size_of_weight, int rand){
         for (int i = 0; i < numb_of_weights; i++) {
-            weights.add(new int[size_of_weight][size_of_weight]);
+            weights.add(new double[size_of_weight][size_of_weight]);
 
             for (int j = 0; j <size_of_weight ; j++) {
                 for (int k = 0; k <size_of_weight ; k++) {
-                    weights.get(weights.size()-1)[j][k] = new Random().nextInt(rand);
+                    weights.get(weights.size()-1)[j][k] = Math.round(new Random().nextDouble()*10.0)/10000.0;
                 }
             }
         }
+    }
+
+    public void setWeights(int index, int i, int j, double newWeight){
+        this.weights.get(index)[i][j]=newWeight;
+    }
+
+    public WeightsCNN(ArrayList<double[][]> weights){
+        this.weights = weights;
     }
 
     public WeightsCNN(String path){
@@ -29,7 +37,7 @@ public class WeightsCNN {
         //реалізувати пізніше
     }
 
-    public ArrayList<int[][]> getWeights(){
+    public ArrayList<double[][]> getWeights(){
         return weights;
     }
 

@@ -1,7 +1,6 @@
 package sample;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -34,13 +33,13 @@ public class RWFile {
      * @param fName image location path
      * @return pixel array of the  image
      */
-    public int[][] readBufferedArrayImage(String fName){
+    public double[][] readBufferedArrayImage(String fName){
         File imageFile = new File(fName);
-        int[][] image = new int[1][1];
+        double[][] image = new double[1][1];
         BufferedImage bImage = null;
         try {
             bImage = ImageIO.read(imageFile);
-            image = new int[bImage.getHeight()][bImage.getWidth()];
+            image = new double[bImage.getHeight()][bImage.getWidth()];
             for (int i = 0; i < image.length ; i++) {
                 for (int j = 0; j < image[0].length; j++) {
                     image[i][j] = bImage.getRGB(j,i);

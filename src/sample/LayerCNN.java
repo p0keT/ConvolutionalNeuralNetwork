@@ -1,12 +1,11 @@
 package sample;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class LayerCNN {
 
-    int[][] input;
-    private ArrayList<int[][]> layer = new ArrayList<int[][]>();
+    double[][] input;
+    private ArrayList<double[][]> layer = new ArrayList<double[][]>();
     private String path = "";
 
     LayerCNN(String path){
@@ -14,26 +13,26 @@ public class LayerCNN {
         input = new RWFile().readBufferedArrayImage(path);
     }
 
-    LayerCNN(ArrayList<int[][]> layer){
+    LayerCNN(ArrayList<double[][]> layer){
         this.layer = layer;
     }
 
-    LayerCNN(int[][] layer){
+    LayerCNN(double[][] layer){
         this.layer.add(layer);
     }
     LayerCNN(){
 
     }
 
-    public void addMap(int[][] map){
+    public void addMap(double[][] map){
         layer.add(map);
     }
 
-    public int[][] getInput() {
+    public double[][] getInput() {
         return input;
     }
 
-    public ArrayList<int[][]> getLayer() {
+    public ArrayList<double[][]> getLayer() {
         return layer;
     }
 
