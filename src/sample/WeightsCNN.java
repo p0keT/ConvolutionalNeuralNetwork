@@ -15,14 +15,14 @@ public class WeightsCNN {
 
             for (int j = 0; j <size_of_weight ; j++) {
                 for (int k = 0; k <size_of_weight ; k++) {
-                    weights.get(weights.size()-1)[j][k] = Math.round(new Random().nextDouble()*10.0)/10000.0;
+                    weights.get(weights.size()-1)[j][k] =Math.round(new Random().nextInt(5)); //Math.round(new Random().nextDouble()*100)/100.0;
                 }
             }
         }
     }
 
-    public void setWeights(int index, int i, int j, double newWeight){
-        this.weights.get(index)[i][j]=newWeight;
+    public void setWeights(int index, double[][] newWeight){
+        this.weights.set(index,newWeight);
     }
 
     public WeightsCNN(ArrayList<double[][]> weights){

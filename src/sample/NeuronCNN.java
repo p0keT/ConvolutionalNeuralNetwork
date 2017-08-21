@@ -14,6 +14,9 @@ public class NeuronCNN {
     private ArrayList<WeightsCNN> newWeightsCNN = new ArrayList<>();
     private double answerFC=0.0;
 
+    ArrayList<double[][]> images = new ArrayList<>();
+    ArrayList<String> names = new ArrayList<>();
+
     private ArrayList<LayerCNN> layersCNN = new ArrayList<>();
     private double learning_rate;
     private int epochs;
@@ -31,23 +34,64 @@ public class NeuronCNN {
     }
 
 
-    NeuronCNN(double[][] input, WeightsCNN weightsCNN, double learning_rate){
-        this.weightsCNN.add(weightsCNN);
+    NeuronCNN(String path, WeightsCNN weightsCNN, double learning_rate){
+        File[] fList;
+        File F = new File(path);
+        fList = F.listFiles();
+
+        for(int i=0; i<fList.length; i++)
+        {
+            if(fList[i].isFile()) {
+                images.add(new RWFile().readBufferedArrayImage(path+"\\" + fList[i].getName()));
+                names.add(fList[i].getName());
+
+            }
+        }
+        //--------------------------------------------
+        //this.weightsCNN.add(weightsCNN);
         this.learning_rate = learning_rate;
         //ArrayList<int[][]> input = new ArrayList<>();
-        layersCNN.add(new LayerCNN(input));
+        layersCNN.add(new LayerCNN(images.get(0)));
 
-        conV(input,weightsCNN.getWeights());
+        //conV(input,weightsCNN.getWeights());
+    }
+
+    public void changeInput(int input){
+        layersCNN.removeAll(layersCNN);
+        layersCNN.add(new LayerCNN(images.get(input)));
+        this.temp=false;
     }
 
     /**
      * Пряме розповсюдження помилки.
-     * тут будемо в циклі викликати метод conV  для кожного input
+     * Викликається коли ваги стягуються з файлу
+     */
+    public void predict(int numbOfWeingtsCNN){
+        for (int i = 0; i <numbOfWeingtsCNN ; i++) {
+            conV(layersCNN.get(layersCNN.size() - 1).getLayer(), weightsCNN.get(i).getWeights());
+            reLU();
+        }
+        weightsCNN.add(new WeightsCNN(5,5,1000));
+        fC(weightsCNN);
+
+    }
+
+    /**
+     * Пряме розповсюдження помилки.
+     * Також створює новий набір вагів.
+     * Якщо ваги стягуються з файлу викликайте перегрузку.
      */
     public void predict(){
-        weightsCNN.add(new WeightsCNN(10,5,1000));
-
-        conV(layersCNN.get(layersCNN.size()-1).getLayer(),weightsCNN.get(weightsCNN.size()-1).getWeights());
+        weightsCNN.add(new WeightsCNN(5, 5, 1000));
+        conV(layersCNN.get(layersCNN.size() - 1).getLayer().get(0), weightsCNN.get(weightsCNN.size() - 1).getWeights());
+        reLU();
+        for (int i = 0; i <5 ; i++) {
+            weightsCNN.add(new WeightsCNN(5, 5, 1000));
+            conV(layersCNN.get(layersCNN.size() - 1).getLayer(), weightsCNN.get(weightsCNN.size() - 1).getWeights());
+            reLU();
+        }
+        weightsCNN.add(new WeightsCNN(5,5,1000));
+        fC(weightsCNN);
 
     }
 
@@ -55,50 +99,58 @@ public class NeuronCNN {
      * Зворотнє розповсюдження помилки.
      * @param expected_predict - очікувана помилка.
      */
-    public void train(int expected_predict){
+    public void train(double expected_predict){
         this.expected_error = expected_predict;
         for (int i = weightsCNN.size()-1; i >= 0; i--) {
-            backPropagation(weightsCNN.get(i),layersCNN.get(i));
+            backPropagation(weightsCNN.get(i), layersCNN.get(i + 1));
         }
     }
 
     private void backPropagation(WeightsCNN weightsCNN, LayerCNN layer){
         double error;
         double weight_delta;
-        double[][] newWeights = new double[weightsCNN.getWeights().get(0).length][weightsCNN.getWeights().get(0)[0].length];
-        for (int i = 0; i < weightsCNN.getWeights().get(0).length; i++) {
-            for (int j = 0; j < weightsCNN.getWeights().get(0)[0].length; j++) {
-                newWeights[i][j]=0;
-            }
-        }
+        double[][] tempWeights = new double[weightsCNN.getWeights().get(0).length][weightsCNN.getWeights().get(0)[0].length];
 
-        double newWeight = 0.0;
+
         for (int m = 0; m <layer.getLayer().size() ; m++) {
+            for (int i = 0; i < weightsCNN.getWeights().get(0).length; i++) {
+                for (int j = 0; j < weightsCNN.getWeights().get(0)[0].length; j++) {
+                    tempWeights[i][j]=0;
+                }
+            }
             //i/j - індекси, що проходять по слоям
             for (int i = 0; i < layer.getLayer().get(m).length; i++) {
                 for (int j = 0; j <layer.getLayer().get(m)[0].length; j++) {
                     double actual_error = layer.getLayer().get(m)[i][j];
-                    //newWeights.add(new double[weightsCNN.getWeights().get(0).length][weightsCNN.getWeights().get(0)[0].length]);
+                    //tempWeights.add(new double[weightsCNN.getWeights().get(0).length][weightsCNN.getWeights().get(0)[0].length]);
                     //k/l - індекси, що проходять по вагам
                     for (int k = 0; k <weightsCNN.getWeights().get(m).length; k++) {
                         for (int l = 0; l <weightsCNN.getWeights().get(m)[0].length; l++) {
                             error = actual_error - expected_error;
                             weight_delta = error*(actual_error*(1-actual_error));
-                            newWeights[k][l]+=weightsCNN.getWeights().get(m)[k][l]-weight_delta*learning_rate;
+                            tempWeights[k][l]+=weightsCNN.getWeights().get(m)[k][l]-weight_delta*learning_rate;
+                            tempWeights[k][l]=Math.round(tempWeights[k][l]*100)/100.0;
+                            tempWeights[k][l]=Math.round(tempWeights[k][l]*100)/100.0;
+                            //System.out.print("+"+tempWeights[k][l]);
                         }
+                        //System.out.println();
                     }
+                    //System.out.println();
 
                 }
             }
             for (int i = 0; i < weightsCNN.getWeights().get(0).length; i++) {
                 for (int j = 0; j < weightsCNN.getWeights().get(0)[0].length; j++) {
-                    newWeights[i][j]/=layer.getLayer().get(m).length*layer.getLayer().get(m)[0].length;
-                    weightsCNN.getWeights().get(m)[i][j]=newWeights[i][j];
-                    newWeights[i][j]=0;
+                    tempWeights[i][j]/=layer.getLayer().get(m).length*layer.getLayer().get(m)[0].length;
+                    tempWeights[i][j]=Math.round(tempWeights[i][j]*100)/100.0;
                 }
+                //System.out.println();
             }
+            //System.out.println();
 
+            weightsCNN.getWeights().set(m,tempWeights);
         }
+
     }
     
     /**
@@ -147,7 +199,7 @@ public class NeuronCNN {
             }
         }
 
-
+        this.temp=true;
         layersCNN.add(new LayerCNN(layerMaps));
     }
 
@@ -200,6 +252,7 @@ public class NeuronCNN {
 
             layersCNN.get(layersCNN.size()-1).addMap(layerMaps.get(0));
         }
+
     }
 
     /**
@@ -216,9 +269,10 @@ public class NeuronCNN {
 //        for (int i = 0; i < lastLayer.size(); i++) {
 //            for (int j = 0; j <lastLayer.get(i).length ; j++) {
 //                for (int k = 0; k < lastLayer.get(i)[0].length; k++) {
-//                    if(lastLayer.get(i)[j][k]<20000){
+//                    if(lastLayer.get(i)[j][k]<200){
 //                        lastLayer.get(i)[j][k]=0;
 //                    }
+//
 //                }
 //            }
 //        }
@@ -226,7 +280,8 @@ public class NeuronCNN {
             for (int j = 0; j <lastLayer.get(i).length ; j++) {
                 for (int k = 0; k < lastLayer.get(i)[0].length; k++) {
 
-                    lastLayer.get(i)[j][k]= (int) (1/(1-Math.exp(lastLayer.get(i)[j][k]*-1)));
+                    lastLayer.get(i)[j][k]= (1/(1-Math.exp(lastLayer.get(i)[j][k]*-1)));
+                    lastLayer.get(i)[j][k]= Math.round(lastLayer.get(i)[j][k]*100)/100.0;
 
                 }
             }
@@ -239,14 +294,16 @@ public class NeuronCNN {
      * предыдущего слоя (карте признаков) и определения свойств,
      * которые наиболее характерны для определенного класса.
      */
-    public void fC(){
+    public void fC(ArrayList<WeightsCNN> weightsCNN){
         ArrayList<double[][]> lastLayer = layersCNN.get(layersCNN.size()-1).getLayer();
-        weightsCNN.add(new WeightsCNN(10,5,1000));
+
         double[][] results = new double[lastLayer.size()][1];
 
         for (int i = 0; i < lastLayer.size(); i++) {
             results[i][0] = convMath(lastLayer.get(i),weightsCNN.get(weightsCNN.size()-1).getWeights().get(i));
-            results[i][0]= (int) (1/(1-Math.exp(results[i][0]*-1)));
+            results[i][0]=Math.round(results[i][0]*100)/100.0;
+            results[i][0]= (1/(1-Math.exp(results[i][0]*-1)));
+            results[i][0]=Math.round(results[i][0]*100)/100.0;
 
         }
 
@@ -261,19 +318,27 @@ public class NeuronCNN {
         System.out.println("*******************answer: "+answerFC);
     }
 
-
+    //треба потім замінити на норм рішення
+    private boolean temp=false;
     public double convMath(double[][] inputPart, double[][] weight)
     {
         double[][] mul = new double[weight.length][weight[0].length];
-        for (int i = 0; i <weight.length; i++)
-        {
-            for (int j = 0; j <weight[0].length; j++)
-            {
-                mul[i][ j] = new Color((int) inputPart[i][j]).getRed()*weight[i][j];
-                mul[i][ j] += new Color((int) inputPart[i][j]).getGreen()*weight[i][j];
-                mul[i][ j] += new Color((int) inputPart[i][j]).getBlue()*weight[i][j];
+        if(temp==false) {
+            for (int i = 0; i < weight.length; i++) {
+                for (int j = 0; j < weight[0].length; j++) {
+                    mul[i][j] = new Color((int) inputPart[i][j]).getRed() * weight[i][j];
+                    mul[i][j] += new Color((int) inputPart[i][j]).getGreen() * weight[i][j];
+                    mul[i][j] += new Color((int) inputPart[i][j]).getBlue() * weight[i][j];
 
 
+                }
+            }
+        }
+        else {
+            for (int i = 0; i < weight.length; i++) {
+                for (int j = 0; j < weight[0].length; j++) {
+                    mul[i][j] = inputPart[i][j] * weight[i][j];
+                }
             }
         }
 
@@ -285,6 +350,8 @@ public class NeuronCNN {
                 sum += mul[i][ j];
             }
         }
+        sum/=25;
+        sum=Math.round(sum*100)/100.0;
         return sum;
     }
 
@@ -339,10 +406,10 @@ public class NeuronCNN {
 
         width=width/height;
 
-        weight = new int[height][width];
+        //weight = new int[height][width];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                weight[i][j]=Integer.parseInt(s.get(i).get(j));
+                //weight[i][j]=Integer.parseInt(s.get(i).get(j));
             }
         }
 

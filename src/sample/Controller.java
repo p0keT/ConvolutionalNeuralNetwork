@@ -62,17 +62,12 @@ public class Controller implements Initializable{
     }
 
     public void trainTest(){
-        WeightsCNN w1 = new WeightsCNN(10,5,1000);
+        WeightsCNN w1 = new WeightsCNN(5,5,1000);
         RWFile rw = new RWFile();
-        double[][] temp2 = rw.readBufferedArrayImage("(1).jpg");
-        NeuronCNN cnn  = new NeuronCNN(temp2,w1,0.05);
-        cnn.reLU();
+        NeuronCNN cnn  = new NeuronCNN("E:\\JProjects\\ConvolutionalNeuralNetwork\\neural",w1,0.5);
         cnn.predict();
-        cnn.reLU();
-        cnn.fC();
-        cnn.save();
-        ArrayList<double[][]> weights0 = cnn.getWeightsCNN().get(0).getWeights();
-        for (int i = 0; i < 1; i++) {
+        ArrayList<double[][]> weights0 = cnn.getWeightsCNN().get(6).getWeights();
+        for (int i = 0; i < 5; i++) {
             for (int j = 0; j <5 ; j++) {
                 for (int k = 0; k <5 ; k++) {
                     System.out.print(" "+weights0.get(i)[j][k]);
@@ -81,16 +76,28 @@ public class Controller implements Initializable{
             }
             System.out.println();
         }
-        cnn.train(1);
-        ArrayList<double[][]> weights = cnn.getWeightsCNN().get(0).getWeights();
-        for (int i = 0; i < 1; i++) {
+        cnn.train(10);
+
+
+
+        ArrayList<double[][]> weights = cnn.getWeightsCNN().get(6).getWeights();
+        System.out.println(cnn.getWeightsCNN().size());
+        System.out.println("----------------------------------------------");
+        for (int i = 0; i < 5; i++) {
             for (int j = 0; j <5 ; j++) {
                 for (int k = 0; k <5 ; k++) {
-                    System.out.print(" "+weights.get(i)[j][k]);
+                    if(weights.get(i)[j][k]==weights0.get(i)[j][k])
+                        System.out.print(" "+weights.get(i)[j][k]);
+                    else
+                        System.out.print(" -");
                 }
                 System.out.println();
             }
             System.out.println();
         }
+        System.out.println();
+
+        cnn.changeInput(0);
+        cnn.predict(cnn.getWeightsCNN().size());
     }
 }
