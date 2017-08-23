@@ -61,33 +61,44 @@ public class Controller implements Initializable{
 
     }
 
-    public void trainTest(){
-        WeightsCNN w1 = new WeightsCNN(5,5,1000);
+    public void trainTest() {
+        WeightsCNN w1 = new WeightsCNN(5, 5, 1000);
         RWFile rw = new RWFile();
-        NeuronCNN cnn  = new NeuronCNN("E:\\JProjects\\ConvolutionalNeuralNetwork\\neural",w1,0.5);
+        NeuronCNN cnn = new NeuronCNN("E:\\JProjects\\ConvolutionalNeuralNetwork\\neural", w1, 1.0);
         cnn.predict();
         ArrayList<double[][]> weights0 = cnn.getWeightsCNN().get(6).getWeights();
         for (int i = 0; i < 5; i++) {
-            for (int j = 0; j <5 ; j++) {
-                for (int k = 0; k <5 ; k++) {
-                    System.out.print(" "+weights0.get(i)[j][k]);
+            for (int j = 0; j < 5; j++) {
+                for (int k = 0; k < 5; k++) {
+                    System.out.print(" " + weights0.get(i)[j][k]);
                 }
                 System.out.println();
             }
             System.out.println();
         }
         cnn.train(10);
+        for (int j = 0; j <10 ; j++) {
 
-
+            for (int i = 0; i < 50; i++) {
+                cnn.changeInput(i);
+                cnn.predict(cnn.getWeightsCNN().size());
+                if (cnn.names.get(i).charAt(0) == '0') {
+                    cnn.train(100);
+                    System.out.println(cnn.names.get(i).charAt(0));
+                } else {
+                    cnn.train(-100);
+                }
+            }
+        }
 
         ArrayList<double[][]> weights = cnn.getWeightsCNN().get(6).getWeights();
         System.out.println(cnn.getWeightsCNN().size());
         System.out.println("----------------------------------------------");
         for (int i = 0; i < 5; i++) {
-            for (int j = 0; j <5 ; j++) {
-                for (int k = 0; k <5 ; k++) {
-                    if(weights.get(i)[j][k]==weights0.get(i)[j][k])
-                        System.out.print(" "+weights.get(i)[j][k]);
+            for (int j = 0; j < 5; j++) {
+                for (int k = 0; k < 5; k++) {
+                    if (weights.get(i)[j][k] == weights0.get(i)[j][k])
+                        System.out.print(" " + weights.get(i)[j][k]);
                     else
                         System.out.print(" -");
                 }
@@ -97,7 +108,9 @@ public class Controller implements Initializable{
         }
         System.out.println();
 
-        cnn.changeInput(0);
-        cnn.predict(cnn.getWeightsCNN().size());
+
+
+
+
     }
 }

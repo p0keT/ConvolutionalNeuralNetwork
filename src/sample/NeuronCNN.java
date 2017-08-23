@@ -67,11 +67,11 @@ public class NeuronCNN {
      * Викликається коли ваги стягуються з файлу
      */
     public void predict(int numbOfWeingtsCNN){
-        for (int i = 0; i <numbOfWeingtsCNN ; i++) {
-            conV(layersCNN.get(layersCNN.size() - 1).getLayer(), weightsCNN.get(i).getWeights());
+        for (int i = 0; i <numbOfWeingtsCNN-1 ; i++) {
+            conV(layersCNN.get(i).getLayer(), weightsCNN.get(i).getWeights());
             reLU();
         }
-        weightsCNN.add(new WeightsCNN(5,5,1000));
+        //weightsCNN.add(new WeightsCNN(5,5,1000));
         fC(weightsCNN);
 
     }
@@ -101,7 +101,12 @@ public class NeuronCNN {
      */
     public void train(double expected_predict){
         this.expected_error = expected_predict;
-        for (int i = weightsCNN.size()-1; i >= 0; i--) {
+
+        for (int i = 0; i <weightsCNN.get(weightsCNN.size()-1).getWeights().size() ; i++) {
+            backPropagation(weightsCNN.get(weightsCNN.size()-1).getWeights().get(i),i,layersCNN.get(layersCNN.size()-1));
+        }
+
+        for (int i = weightsCNN.size()-2; i >= 0; i--) {
             backPropagation(weightsCNN.get(i), layersCNN.get(i + 1));
         }
     }
@@ -149,6 +154,53 @@ public class NeuronCNN {
             //System.out.println();
 
             weightsCNN.getWeights().set(m,tempWeights);
+        }
+
+    }
+
+    private void backPropagation(double[][] weights, int index, LayerCNN layer){
+        double error;
+        double weight_delta;
+        double[][] tempWeights = new double[weights.length][weights[0].length];
+
+
+        for (int m = 0; m <layer.getLayer().size() ; m++) {
+            for (int i = 0; i < weights.length; i++) {
+                for (int j = 0; j < weights[0].length; j++) {
+                    tempWeights[i][j]=0;
+                }
+            }
+            //i/j - індекси, що проходять по слоям
+            for (int i = 0; i < layer.getLayer().get(m).length; i++) {
+                for (int j = 0; j <layer.getLayer().get(m)[0].length; j++) {
+                    double actual_error = layer.getLayer().get(m)[i][j];
+                    //tempWeights.add(new double[weightsCNN.getWeights().get(0).length][weightsCNN.getWeights().get(0)[0].length]);
+                    //k/l - індекси, що проходять по вагам
+                    for (int k = 0; k <weights.length; k++) {
+                        for (int l = 0; l <weights[0].length; l++) {
+                            error = actual_error - expected_error;
+                            weight_delta = error*(actual_error*(1-actual_error));
+                            tempWeights[k][l]=weights[k][l]-weight_delta*learning_rate;
+                            tempWeights[k][l]=Math.round(tempWeights[k][l]*100)/100.0;
+                            tempWeights[k][l]=Math.round(tempWeights[k][l]*100)/100.0;
+                            //System.out.print("+"+tempWeights[k][l]);
+                        }
+                        //System.out.println();
+                    }
+                    //System.out.println();
+
+                }
+            }
+            for (int i = 0; i < weights.length; i++) {
+                for (int j = 0; j < weights[0].length; j++) {
+                    tempWeights[i][j]/=layer.getLayer().get(m).length*layer.getLayer().get(m)[0].length;
+                    tempWeights[i][j]=Math.round(tempWeights[i][j]*100)/100.0;
+                }
+                //System.out.println();
+            }
+            //System.out.println();
+
+            weightsCNN.get(weightsCNN.size()-1).getWeights().set(index,tempWeights);
         }
 
     }
@@ -313,9 +365,10 @@ public class NeuronCNN {
             }
         }
         answerFC/=results.length;
+        //answerFC=Math.round(answerFC*100)/100.0;
         double[][] answer = new double[][] {{answerFC}};
         layersCNN.add(new LayerCNN(answer));
-        System.out.println("*******************answer: "+answerFC);
+        System.out.println("*******************answer: "+answerFC+" / error: "+Math.abs(answerFC-expected_error));
     }
 
     //треба потім замінити на норм рішення
